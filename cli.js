@@ -2,7 +2,7 @@
 import yargs from 'yargs';
 import fetch from 'node-fetch';
 import { hideBin } from 'yargs/helpers';
-import { parse, format } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import fs from 'node:fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -34,11 +34,11 @@ yargs(hideBin(process.argv))
                 alias: 'ut'
             })
             .option('spent', {
-                describe: 'Time spent',
+                describe: 'Time spent. It uses the same format as in Jira which means 8 hours are written as: 8h and so on',
                 type: 'string'
             })
             .option('date', {
-                describe: 'Date for the work log',
+                describe: 'Date for the work log in the format of yyyy-mm-dd',
                 type: 'string'
             })
     }, (argv) => {
@@ -141,11 +141,12 @@ function handleTimer(argv) {
 
 async function handleWorklog(argv) {
     const dt = argv.date
-        ? parse(argv.date, "yyyy-MM-dd", new Date())
+        ? parseISO(`${argv.date}T00:00:00Z`)
         : new Date();
 
-    let text = argv.text;
-    if (argv.text === undefined) text = "";
+    const text = argv.text
+        ? argv.text
+        : "";
 
     let spent = argv.spent;
     let id = argv.id;
