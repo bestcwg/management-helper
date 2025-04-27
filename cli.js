@@ -26,7 +26,6 @@ yargs(hideBin(process.argv))
             .option('text', {
                 describe: 'Work log comment',
                 type: 'string',
-                demandOption: true,
                 alias: 't'
             })
             .option('usetimer', {
@@ -145,14 +144,12 @@ async function handleWorklog(argv) {
         ? parse(argv.date, "yyyy-MM-dd", new Date())
         : new Date();
 
-    console.log("id: " + argv.id);
-    console.log("text: " + argv.text);
-    console.log("spent: " + argv.spent);
-    const jiraTs = format(dt, "yyyy-MM-dd'T'HH:mm:ss.SSSxx");
-    console.log(`date: ${jiraTs}`);
+    let text = argv.text;
+    if (argv.text === undefined) text = "";
 
     let spent = argv.spent;
     let id = argv.id;
+
     const timerFile = path.join(__dirname, 'timer.json');
 
     if (argv.usetimer) {
@@ -160,11 +157,13 @@ async function handleWorklog(argv) {
             console.log("No timer running");
             return;
         }
+
         const timer = JSON.parse(fs.readFileSync(timerFile, 'utf8'));
         if (!timer) {
             console.log("Corrupt json timer");
             return;
         }
+
         const diffMs = new Date(new Date().toISOString()) - new Date(timer.startTime);
         spent = Math.floor(diffMs / (1000 * 60)) + "m";
         const hours = Math.floor(spent / 60);
@@ -176,8 +175,13 @@ async function handleWorklog(argv) {
 
         console.log(`Found timer with id ${id} and spent time ${hours} hours and ${minutes} minutes`)
         console.log(`Adding timelog to Jira`)
-
     }
+
+    console.log("id: " + id);
+    console.log("text: " + text);
+    console.log("spent: " + spent);
+    const jiraTs = format(dt, "yyyy-MM-dd'T'HH:mm:ss.SSSxx");
+    console.log(`date: ${jiraTs}`);
 
     const bodyData = `{
 "comment": {
@@ -185,7 +189,7 @@ async function handleWorklog(argv) {
 {
 "content": [
 {
-"text": "${argv.text}",
+"text": "${text}",
 "type": "text"
 }
 ],
@@ -216,21 +220,19 @@ async function handleWorklog(argv) {
                 `Response: ${response.status} ${response.statusText}`
             );
             if (response.ok) {
-                console.log(''); // Empty log line
-                fs.unlinkSync(timerFile); // Only unlink if status is successful
+                if (fs.existsSync(timerFile)) fs.unlinkSync(timerFile);
+
             } else {
-                console.log(`Not unlinking file due to unsuccessful status code: ${response.status}`);
+                if (fs.existsSync(timerFile))
+                    console.log(`Not unlinking file due to unsuccessful status code: ${response.status}`);
             }
         })
         .catch(err => console.error(err));
-
-    console.log(``)
 }
 
 async function handleFocus(argv) {
     const focusFile = path.join(__dirname, 'focus.json');
 
-    // Make sure the focus file exists
     try {
         if (!fs.existsSync(focusFile)) {
             fs.writeFileSync(focusFile, JSON.stringify([], null, 2));
