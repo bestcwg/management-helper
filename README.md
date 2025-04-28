@@ -62,4 +62,6 @@ mh worklog --usetimer --text "Example text"
 
 This incorporates an actual timer for the spent time on a specific task which skips several steps
 
+# TODO:
 
+- worklog time spent should minues with the current

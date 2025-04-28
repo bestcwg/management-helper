@@ -31,7 +31,7 @@ yargs(hideBin(process.argv))
             .option('usetimer', {
                 describe: `Use current timer's id and time spent`,
                 type: 'boolean',
-                alias: 'ut'
+                alias: 'u'
             })
             .option('spent', {
                 describe: 'Time spent. It uses the same format as in Jira which means 8 hours are written as: 8h and so on',
@@ -39,7 +39,8 @@ yargs(hideBin(process.argv))
             })
             .option('date', {
                 describe: 'Date for the work log in the format of yyyy-mm-dd',
-                type: 'string'
+                type: 'string',
+                alias: 'd'
             })
     }, (argv) => {
         handleWorklog(argv);
