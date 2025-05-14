@@ -19,8 +19,8 @@ const domain = config.domain;
 yargs(hideBin(process.argv))
     .command('worklog', 'Log work to Jira', (yargs) => {
         return yargs
-            .option('id', {
-                describe: 'Jira issue ID',
+            .option('add', {
+                describe: 'Add worklog by Jira issue ID',
                 type: 'string'
             })
             .option('text', {
@@ -150,7 +150,7 @@ async function handleWorklog(argv) {
         : "";
 
     let spent = argv.spent;
-    let id = argv.id;
+    let id = argv.add;
 
     const timerFile = path.join(__dirname, 'timer.json');
 
